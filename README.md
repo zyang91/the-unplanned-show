@@ -44,7 +44,7 @@ The same three steps run in CI (`.github/workflows/ci.yml`) on every pull reques
 2. Keep `status: draft` and `date: null` while writing.
 3. To publish, set `status: published`, a real `date` and an `excerpt`.
 
-Frontmatter is validated at build time (`src/content.config.ts`): Unplanned School articles require a `series` (`mcp-session`, `musa-session`, `academia-research`); other sections must not set one; published articles require a date and an excerpt. Only published, dated articles reach article pages, section and series pages, the archive and `rss.xml`; drafts and the planning backlog never do. Editorial rules are in [`docs/editorial-guidelines.md`](docs/editorial-guidelines.md); the backlog is [`planning/editorial-backlog.md`](planning/editorial-backlog.md) and is never rendered.
+Frontmatter is validated at build time (`src/content.config.ts`): Unplanned School articles require a `series` (`mcp-session`, `musa-session`, `academia-research`); other sections must not set one; published articles require a date and an excerpt. Only published, dated articles reach article pages, section and series pages, the archive and `rss.xml`; drafts and the planning backlog never do. Internal editorial rules are in [`docs/editorial-guidelines.md`](docs/editorial-guidelines.md) (repo only, not published); the public, satirical version is [`docs/public-editorial-guidelines.md`](docs/public-editorial-guidelines.md), rendered at `/editorial-guidelines/`; the backlog is [`planning/editorial-backlog.md`](planning/editorial-backlog.md) and is never rendered.
 
 ## Project layout
 
@@ -56,6 +56,7 @@ src/components, layouts   reusable parts
 src/pages                 routes, matching design.md section 9
 src/styles                tokens.css (palette, type, scale), base.css, global.css
 COPYRIGHT.md, DISCLAIMER.md   rendered at /copyright/ and /editorial-policy/
+docs/public-editorial-guidelines.md   rendered at /editorial-guidelines/
 ```
 
 ## Pull request previews (Vercel)
