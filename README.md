@@ -58,6 +58,10 @@ src/styles                tokens.css (palette, type, scale), base.css, global.cs
 COPYRIGHT.md, DISCLAIMER.md   rendered at /copyright/ and /editorial-policy/
 ```
 
+## Pull request previews (Vercel)
+
+`vercel.json` builds the site at the domain root (`BASE=/`) so every pull request gets a Vercel preview URL. One-time setup: import this repository at vercel.com/new (Framework: Astro, no further settings). Vercel then comments a preview link on each PR. This is for review only; production stays on GitHub Pages.
+
 ## Deployment (GitHub Pages)
 
 The site is configured for `https://zyang91.github.io/the-unplanned-show/` (`astro.config.mjs`). For a custom domain or a different repository name, set `SITE` and `BASE` at build time, for example `SITE=https://example.org BASE=/ npm run build`.

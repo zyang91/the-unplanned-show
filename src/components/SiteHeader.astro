@@ -13,20 +13,33 @@ const isCurrent = (href: string) => {
 };
 ---
 
-<header class="masthead">
-  <div class="container nameplate">
-    <a class="wordmark" href={withBase('/')} aria-label={`${SITE.name}, home`}>{SITE.name}</a>
-    <p class="nameplate__tag">{SITE.tagline}</p>
+<header class={`masthead${here === norm(withBase('/')) ? ' masthead--home' : ''}`}>
+  <div class="container">
+    <div class="masthead__strip">
+      <span>Independent satire</span>
+      <span>Pre-launch edition</span>
+    </div>
+    <div class="nameplate">
+      <a class="wordmark" href={withBase('/')} aria-label={`${SITE.name}, home`}>{SITE.name}</a>
+      <p class="nameplate__tag">{SITE.tagline}</p>
+    </div>
   </div>
   <nav class="nav" aria-label="Primary" data-nav>
     <div class="container nav__bar">
       <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-list" data-nav-toggle>
-        <span class="nav__toggle-label">Menu</span>
+        <span class="nav__toggle-label">Sections</span>
       </button>
       <ul class="nav__list" id="nav-list">
         {NAV.map((item) => (
-          <li>
-            <a class="nav__link" href={withBase(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+          <li class:list={['nav__item', { 'nav__item--sub': item.children }]}>
+            <a class="nav__link" href={withBase(item.href)} aria-current={isCurrent(item.href) && !item.children?.some((c) => isCurrent(c.href)) ? 'page' : undefined} data-current={isCurrent(item.href) ? '' : undefined}>{item.label}</a>
+            {item.children && (
+              <ul class="subnav">
+                {item.children.map((c) => (
+                  <li><a class="subnav__link" href={withBase(c.href)} aria-current={isCurrent(c.href) ? 'page' : undefined}>{c.label}</a></li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
@@ -41,7 +54,7 @@ const isCurrent = (href: string) => {
     const set = (open: boolean) => {
       nav.toggleAttribute('data-open', open);
       toggle.setAttribute('aria-expanded', String(open));
-      toggle.querySelector('.nav__toggle-label')!.textContent = open ? 'Close' : 'Menu';
+      toggle.querySelector('.nav__toggle-label')!.textContent = open ? 'Close' : 'Sections';
     };
     toggle.addEventListener('click', () => set(!nav.hasAttribute('data-open')));
     document.addEventListener('keydown', (e) => {

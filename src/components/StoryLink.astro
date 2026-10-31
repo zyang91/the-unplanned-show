@@ -1,0 +1,24 @@
+---
+import type { Article } from '../lib/articles';
+import { formatDate, isoDate } from '../lib/articles';
+import { sectionBySlug, seriesBySlug } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props { article: Article; headline?: 'h2' | 'h3'; compact?: boolean }
+const { article, headline: Tag = 'h3', compact = false } = Astro.props;
+const { title, section, series, date, excerpt } = article.data;
+const sec = sectionBySlug(section);
+const ser = series ? seriesBySlug(series) : undefined;
+const href = withBase(`/articles/${article.id}/`);
+const showHeading = Astro.props.headline !== undefined;
+---
+
+<article class:list={['teaser', { 'teaser--compact': compact }]}>
+  {showHeading && <Tag class="teaser__title"><a href={href}>{title}</a></Tag>}
+  <p class="teaser__meta">
+    {sec && <span>{sec.title}</span>}
+    {ser && <span>{ser.title}</span>}
+    {date && <time datetime={isoDate(date)}>{formatDate(date)}</time>}
+  </p>
+  {!compact && excerpt && showHeading && <p class="teaser__excerpt">{excerpt}</p>}
+</article>
