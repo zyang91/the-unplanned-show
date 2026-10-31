@@ -1,0 +1,30 @@
+---
+import { SITE } from '../data/site';
+import { withBase } from '../lib/url';
+
+const links = [
+  { label: 'About', href: withBase('/about/') },
+  { label: 'Editorial policy', href: withBase('/editorial-policy/') },
+  { label: 'Copyright', href: withBase('/copyright/') },
+  { label: 'GitHub', href: SITE.github },
+  { label: 'RSS', href: withBase('/rss.xml') },
+];
+---
+
+<footer class="colophon">
+  <div class="container colophon__grid">
+    <div class="colophon__brand">
+      <p class="colophon__name">{SITE.name}</p>
+      <p class="colophon__tag">Keep Planning. Results Not Guaranteed.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="colophon__links">
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+    <div class="colophon__legal">
+      <p>{SITE.disclaimer}</p>
+      <p>{SITE.copyright}</p>
+    </div>
+  </div>
+</footer>

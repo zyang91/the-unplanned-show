@@ -1,0 +1,11 @@
+---
+import { withBase } from '../lib/url';
+interface Props { title: string; text: string; link?: boolean }
+const { title, text, link = true } = Astro.props;
+---
+
+<div class="empty">
+  <p class="empty__title">{title}</p>
+  <p>{text}</p>
+  {link && <p><a href={withBase('/editorial-policy/')}>Read the editorial policy</a></p>}
+</div>

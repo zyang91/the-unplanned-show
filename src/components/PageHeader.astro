@@ -1,0 +1,21 @@
+---
+interface Props {
+  title: string;
+  deck?: string;
+  crumbs?: { label: string; href?: string }[];
+}
+const { title, deck, crumbs } = Astro.props;
+---
+
+<header class="page-head container">
+  {crumbs && (
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        {crumbs.map((c) => <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>)}
+      </ol>
+    </nav>
+  )}
+  <h1>{title}</h1>
+  {deck && <p class="page-head__deck">{deck}</p>}
+  <slot />
+</header>

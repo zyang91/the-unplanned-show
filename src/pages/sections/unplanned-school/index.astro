@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StoryList from '../../../components/StoryList.astro';
+import { getPublished } from '../../../lib/articles';
+import { sectionBySlug, SERIES } from '../../../data/site';
+import { withBase } from '../../../lib/url';
+
+const section = sectionBySlug('unplanned-school')!;
+const stories = await getPublished({ section: 'unplanned-school' });
+const counts = await Promise.all(SERIES.map(async (s) => (await getPublished({ series: s.slug })).length));
+---
+
+<BaseLayout title={section.title} description={`${section.tagline} ${section.summary}`}>
+  <PageHeader
+    title={section.title}
+    deck={section.tagline}
+    crumbs={[{ label: 'Home', href: withBase('/') }, { label: section.title }]}
+  />
+  <section class="container band" aria-labelledby="series-head">
+    <h2 class="h-section" id="series-head">Three series, one curriculum</h2>
+    <ul class="series-grid">
+      {SERIES.map((s, i) => (
+        <li class="series-card">
+          <h3 class="series-card__title"><a href={withBase(s.href)}>{s.title}</a></h3>
+          <p class="series-card__tag">{s.tagline}</p>
+          <p>{s.summary}</p>
+          <p class="series-card__count num">{counts[i]} {counts[i] === 1 ? 'story' : 'stories'} published</p>
+        </li>
+      ))}
+    </ul>
+    <p class="note note--wide">
+      MCP and MUSA begin from experiences and observations within graduate education. Academia &amp; Research has a
+      broader scope and is not institution-specific.
+    </p>
+  </section>
+  <section class="container band" aria-labelledby="latest">
+    <h2 class="h-section" id="latest">Latest from the school</h2>
+    <StoryList articles={stories} showSection={false} />
+  </section>
+</BaseLayout>

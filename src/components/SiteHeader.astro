@@ -1,0 +1,57 @@
+---
+import { NAV, SITE } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props { currentPath: string }
+const { currentPath } = Astro.props;
+
+const norm = (p: string) => (p.endsWith('/') ? p : `${p}/`);
+const here = norm(currentPath);
+const isCurrent = (href: string) => {
+  const target = norm(withBase(href));
+  return href === '/' ? here === target : here.startsWith(target);
+};
+---
+
+<header class="masthead">
+  <div class="container nameplate">
+    <a class="wordmark" href={withBase('/')} aria-label={`${SITE.name}, home`}>{SITE.name}</a>
+    <p class="nameplate__tag">{SITE.tagline}</p>
+  </div>
+  <nav class="nav" aria-label="Primary" data-nav>
+    <div class="container nav__bar">
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-list" data-nav-toggle>
+        <span class="nav__toggle-label">Menu</span>
+      </button>
+      <ul class="nav__list" id="nav-list">
+        {NAV.map((item) => (
+          <li>
+            <a class="nav__link" href={withBase(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = nav?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  if (nav && toggle) {
+    const set = (open: boolean) => {
+      nav.toggleAttribute('data-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.querySelector('.nav__toggle-label')!.textContent = open ? 'Close' : 'Menu';
+    };
+    toggle.addEventListener('click', () => set(!nav.hasAttribute('data-open')));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.hasAttribute('data-open')) {
+        set(false);
+        toggle.focus();
+      }
+    });
+    nav.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false);
+    });
+  }
+</script>

@@ -1,0 +1,26 @@
+---
+import ArticleCard from './ArticleCard.astro';
+import EmptyState from './EmptyState.astro';
+import type { Article } from '../lib/articles';
+
+interface Props {
+  articles: Article[];
+  showSection?: boolean;
+  emptyTitle?: string;
+  emptyText?: string;
+}
+const {
+  articles,
+  showSection = true,
+  emptyTitle = 'No stories filed yet.',
+  emptyText = 'The first ones are in committee. Published stories will appear here, newest first.',
+} = Astro.props;
+---
+
+{articles.length > 0 ? (
+  <div class="story-list">
+    {articles.map((a) => <ArticleCard article={a} showSection={showSection} />)}
+  </div>
+) : (
+  <EmptyState title={emptyTitle} text={emptyText} />
+)}
