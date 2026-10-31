@@ -1,0 +1,62 @@
+---
+import { SECTIONS, SERIES } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props { filed: Record<string, number> }
+const { filed } = Astro.props;
+
+// A tile cartogram of everything we cover, one tile per beat. Tiles are filled
+// as stories are filed in their section; until then each is half-shaded.
+const SHAPE = [
+  '......XX.',
+  '..XXXX.XX',
+  '.XXXXXXXX',
+  '.XXXXXXX.',
+  '..XXXXX..',
+  'X.....X..',
+];
+
+const beats = [
+  ...SERIES.flatMap((s) => s.subjects.map((label) => ({ section: 'unplanned-school', label, abbr: s.title.split(' ')[0].slice(0, 4) }))),
+  ...SECTIONS.slice(1).flatMap((s) => s.coverage.map((label) => ({ section: s.slug, label, abbr: s.slug === 'unplanned-plan' ? 'PLAN' : 'IMPL' }))),
+];
+
+const remaining = { ...filed };
+let n = 0;
+const tiles = SHAPE.flatMap((row, r) =>
+  [...row].flatMap((ch, c) => {
+    if (ch !== 'X') return [];
+    const beat = beats[n++];
+    const isFiled = (remaining[beat.section] ?? 0) > 0;
+    if (isFiled) remaining[beat.section]--;
+    return [{ ...beat, r: r + 1, c: c + 1, filed: isFiled }];
+  }),
+);
+
+const totalFiled = Object.values(filed).reduce((a, b) => a + b, 0);
+const legend = [
+  { slug: 'unplanned-school', label: 'School' },
+  { slug: 'unplanned-plan', label: 'Plan' },
+  { slug: 'unplanned-implementation', label: 'Implementation' },
+];
+---
+
+<figure class="tiles">
+  <figcaption class="tiles__head">
+    <span class="tiles__count num">{totalFiled}<span aria-hidden="true">–</span>{tiles.length - totalFiled}</span>
+    <span class="tiles__label">stories filed – beats pending study</span>
+  </figcaption>
+  <div class="tiles__grid" role="img" aria-label={`Map of ${tiles.length} coverage beats across three sections; ${totalFiled} have a story filed.`}>
+    {tiles.map((t) => (
+      <span class={`tile tile--${t.section.replace('unplanned-', '')}${t.filed ? ' tile--filed' : ''}`} style={`grid-row:${t.r};grid-column:${t.c}`} title={t.label}>
+        <span class="tile__abbr">{t.abbr}</span>
+      </span>
+    ))}
+  </div>
+  <ul class="tiles__legend">
+    {legend.map((l) => (
+      <li class={`legend legend--${l.slug.replace('unplanned-', '')}`}><a href={withBase(`/sections/${l.slug}/`)}>{l.label}</a></li>
+    ))}
+  </ul>
+  <p class="tiles__note">Source: The Unplanned Show editors. Filled tiles have a story; shaded tiles are in committee.</p>
+</figure>

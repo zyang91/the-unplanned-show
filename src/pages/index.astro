@@ -1,79 +1,107 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StaffReport from '../components/StaffReport.astro';
-import StoryLink from '../components/StoryLink.astro';
-import { getPublished } from '../lib/articles';
-import { SECTIONS, SERIES, SITE } from '../data/site';
+import TileMap from '../components/TileMap.astro';
+import { formatDate, getPublished, isoDate } from '../lib/articles';
+import { SECTIONS, SERIES, SITE, sectionBySlug, seriesBySlug } from '../data/site';
 import { withBase } from '../lib/url';
 
 const stories = await getPublished();
 const [lead, ...rest] = stories;
-const secondary = rest.slice(0, 3);
-const more = rest.slice(3, 9);
+const leftStories = rest.slice(0, 3);
+const latest = stories.slice(0, 8);
 
-// Section positions stay reserved on the front page until a story is filed.
-const reserved = SECTIONS.map((s) => ({ ...s, story: stories.find((a) => a.data.section === s.slug) }));
+const filed = Object.fromEntries(SECTIONS.map((s) => [s.slug, stories.filter((a) => a.data.section === s.slug).length]));
+const href = (id: string) => withBase(`/articles/${id}/`);
 
-const school = SECTIONS[0];
-const [plan, implementation] = [SECTIONS[1], SECTIONS[2]];
 const latestFor = async (filter: Parameters<typeof getPublished>[0]) => (await getPublished(filter)).slice(0, 3);
 const seriesStories = await Promise.all(SERIES.map(async (s) => ({ ...s, stories: await latestFor({ series: s.slug }) })));
+const [school, plan, implementation] = SECTIONS;
 const planStories = await latestFor({ section: 'unplanned-plan' });
 const implStories = await latestFor({ section: 'unplanned-implementation' });
+
+// Pre-launch stand-ins keep the strip populated until stories are filed.
+const placeholders = [
+  { kicker: 'In committee', title: 'Planning continues despite uncertain results' },
+  { kicker: 'Pending review', title: 'Studio deliverable declared a work in progress' },
+  { kicker: 'Under study', title: 'Public comment period extended, then forgotten' },
+  { kicker: 'Deferred', title: 'Model achieves 94% accuracy; decision still unmade' },
+];
 ---
 
 <BaseLayout>
   <div class="container front">
-    <section class="front__lead" aria-labelledby="lead-title">
+    <section class="front__left" aria-labelledby="lead-title">
       {lead ? (
         <>
-          <h1 class="lead__title" id="lead-title"><a href={withBase(`/articles/${lead.id}/`)}>{lead.data.title}</a></h1>
+          <h1 class="lead__title" id="lead-title"><a href={href(lead.id)}>{lead.data.title}</a></h1>
           {lead.data.excerpt && <p class="lead__deck">{lead.data.excerpt}</p>}
-          <StoryLink article={lead} />
+          <p class="lead__by">{sectionBySlug(lead.data.section)?.title} · <time datetime={isoDate(lead.data.date!)}>{formatDate(lead.data.date!)}</time></p>
         </>
       ) : (
         <>
           <h1 class="lead__title" id="lead-title">Breaking News: Planning Continues Despite Uncertain Results.</h1>
           <p class="lead__deck">Our first stories are still in committee, pending further study.</p>
-          <p class="lead__slug">Placeholder for the lead story. No article has been filed for this position.</p>
+          <p class="lead__by">By the editors</p>
         </>
       )}
+      <ul class="stack">
+        {leftStories.length > 0
+          ? leftStories.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)
+          : SECTIONS.map((s) => <li><a href={withBase(s.href)}>{s.tagline}</a></li>)}
+      </ul>
     </section>
 
-    <aside class="front__side" aria-label="Editorial notes">
-      <StaffReport published={stories.length} />
-      <section class="note-box" aria-labelledby="note-title">
-        <h2 class="note-box__title" id="note-title">From the editors</h2>
-        <p>Satire is labelled. Evidence is listed.</p>
-        <p>{SITE.disclaimer}</p>
-        <p><a href={withBase('/editorial-policy/')}>Read the editorial policy</a></p>
-      </section>
+    <div class="front__center">
+      <TileMap filed={filed} />
+    </div>
+
+    <aside class="front__right" aria-labelledby="rail-title">
+      <h2 class="kicker-head" id="rail-title"><a href={withBase('/archive/')}>Sections <span aria-hidden="true">›</span></a></h2>
+      <ul class="rail">
+        {[school, plan, implementation].map((s) => (
+          <li class="rail__item">
+            <span class="rail__kicker">{s.title}</span>
+            <a class="rail__title" href={withBase(s.href)}>{s.tagline}</a>
+          </li>
+        ))}
+        {SERIES.map((s) => (
+          <li class="rail__item rail__item--small">
+            <span class="rail__kicker">Unplanned School</span>
+            <a class="rail__title" href={withBase(s.href)}>{s.title}: {s.tagline}</a>
+          </li>
+        ))}
+      </ul>
     </aside>
-
-    <section class="front__inside" aria-label="Also in this edition">
-      {secondary.length > 0 ? (
-        <>
-          {secondary.map((a) => <StoryLink article={a} headline="h2" />)}
-          {more.length > 0 && (
-            <div class="front__more">
-              {more.map((a) => <StoryLink article={a} headline="h2" compact />)}
-            </div>
-          )}
-        </>
-      ) : (
-        reserved.map((s) => (
-          <article class="slot">
-            <h2 class="slot__title"><a href={withBase(s.href)}>{s.title}</a></h2>
-            <p class="slot__tag">{s.tagline}</p>
-            <p class="slot__slug">No story filed. Position reserved.</p>
-          </article>
-        ))
-      )}
-    </section>
   </div>
 
+  <section class="container latest" aria-labelledby="latest-title">
+    <header class="latest__head">
+      <h2 class="latest__title" id="latest-title">The Latest</h2>
+      <span class="latest__badge">Pre-launch</span>
+      <p class="latest__tag">Fresh from the desk, such as it is.</p>
+    </header>
+    <ol class="latest__row">
+      {latest.length > 0
+        ? latest.map((a) => (
+            <li class="latest__item">
+              <p class="latest__by">{sectionBySlug(a.data.section)?.title}{a.data.series && ` · ${seriesBySlug(a.data.series)?.title}`}</p>
+              <time class="latest__time" datetime={isoDate(a.data.date!)}>{formatDate(a.data.date!)}</time>
+              <a class="latest__link" href={href(a.id)}>{a.data.title}</a>
+            </li>
+          ))
+        : placeholders.map((p) => (
+            <li class="latest__item">
+              <p class="latest__by latest__by--new">{p.kicker}</p>
+              <span class="latest__link">{p.title}</span>
+              <p class="latest__slug">No story filed.</p>
+            </li>
+          ))}
+    </ol>
+  </section>
+
   <div class="container inside" id="sections">
-    <section class="part" aria-labelledby="school-head">
+    <section class="part part--school" aria-labelledby="school-head">
       <header class="part__head">
         <h2 class="part__title" id="school-head"><a href={withBase(school.href)}>{school.title}</a></h2>
         <p class="part__tag">{school.tagline}</p>
@@ -86,7 +114,7 @@ const implStories = await latestFor({ section: 'unplanned-implementation' });
             <p>{s.summary}</p>
             {s.stories.length > 0 ? (
               <ul class="headlines">
-                {s.stories.map((a) => <li><a href={withBase(`/articles/${a.id}/`)}>{a.data.title}</a></li>)}
+                {s.stories.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)}
               </ul>
             ) : (
               <p class="slot__slug">No stories filed.</p>
@@ -96,23 +124,29 @@ const implStories = await latestFor({ section: 'unplanned-implementation' });
       </div>
     </section>
 
-    <div class="parts">
+    <div class="part__side">
+      <StaffReport published={stories.length} />
       {[{ s: plan, list: planStories }, { s: implementation, list: implStories }].map(({ s, list }) => (
-        <section class="part" aria-labelledby={`${s.slug}-head`}>
+        <section class="part part--small" aria-labelledby={`${s.slug}-head`}>
           <header class="part__head">
-            <h2 class="part__title" id={`${s.slug}-head`}><a href={withBase(s.href)}>{s.title}</a></h2>
+            <h2 class="part__title part__title--small" id={`${s.slug}-head`}><a href={withBase(s.href)}>{s.title}</a></h2>
             <p class="part__tag">{s.tagline}</p>
           </header>
-          <p>{s.summary}</p>
           {list.length > 0 ? (
             <ul class="headlines">
-              {list.map((a) => <li><a href={withBase(`/articles/${a.id}/`)}>{a.data.title}</a></li>)}
+              {list.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)}
             </ul>
           ) : (
             <p class="slot__slug">No stories filed.</p>
           )}
         </section>
       ))}
+      <section class="note-box" aria-labelledby="note-title">
+        <h2 class="note-box__title" id="note-title">From the editors</h2>
+        <p>Satire is labelled. Evidence is listed.</p>
+        <p>{SITE.disclaimer}</p>
+        <p><a href={withBase('/editorial-policy/')}>Read the editorial policy</a></p>
+      </section>
     </div>
   </div>
 
