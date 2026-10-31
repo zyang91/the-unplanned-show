@@ -86,8 +86,8 @@ import editor from '../assets/editor.png';
     font-size: var(--text-sm); color: var(--color-muted); display: flex; flex-wrap: wrap; gap: var(--space-xs);
   }
   .profile__byline strong { color: var(--color-ink); text-transform: uppercase; letter-spacing: 0.04em; font-size: var(--text-xs); align-self: center; }
-  .profile__figure { margin: 0; }
-  .profile__figure img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; object-position: top; }
+  .profile__figure { margin: 0; text-align: center; }
+  .profile__figure img { width: min(100%, 300px); aspect-ratio: 1; margin-inline: auto; border-radius: 50%; object-fit: cover; object-position: center 10%; }
   .profile__figure figcaption {
     margin-top: var(--space-xs); font-size: var(--text-xs); line-height: 1.4; color: var(--color-muted);
   }
