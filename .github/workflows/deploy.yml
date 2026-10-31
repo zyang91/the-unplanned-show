@@ -1,11 +1,10 @@
-# Builds the site and publishes it to GitHub Pages. It does nothing until Pages is
-# enabled for this repository (Settings > Pages > Source: GitHub Actions), which
-# is a deliberate, manual step.
+# Builds the site and publishes it to GitHub Pages on every push to main. It can
+# also be run by hand. Requires Settings > Pages > Source: GitHub Actions.
 name: Deploy to GitHub Pages
 
-# Manual trigger only, so nothing is published without approval. Once Pages is
-# enabled and approved, add `push: { branches: [main] }` here to deploy on merge.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
