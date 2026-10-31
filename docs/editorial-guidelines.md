@@ -1,6 +1,6 @@
 # Editorial guidelines
 
-Working rules for anyone writing for The Unplanned Show. The public version lives at `/editorial-policy/` (sourced from `DISCLAIMER.md`).
+Working rules for anyone writing for The Unplanned Show. This file is internal and is never published. Two public pages exist: `/editorial-policy/` (sourced from `DISCLAIMER.md`) and the satirical `/editorial-guidelines/` (sourced from `docs/public-editorial-guidelines.md`).
 
 ## Principle
 
