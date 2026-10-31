@@ -132,9 +132,19 @@ export const SERIES: Series[] = [
 export const sectionBySlug = (slug: string) => SECTIONS.find((s) => s.slug === slug);
 export const seriesBySlug = (slug: string) => SERIES.find((s) => s.slug === slug);
 
-export const NAV = [
-  { label: 'Home', href: '/' },
-  { label: 'Unplanned School', href: '/sections/unplanned-school/' },
+export interface NavItem {
+  label: string;
+  href: string;
+  children?: { label: string; href: string }[];
+}
+
+// The wordmark is the home link, so the section bar carries sections only.
+export const NAV: NavItem[] = [
+  {
+    label: 'Unplanned School',
+    href: '/sections/unplanned-school/',
+    children: SERIES.map((s) => ({ label: s.title, href: s.href })),
+  },
   { label: 'Unplanned Plan', href: '/sections/unplanned-plan/' },
   { label: 'Unplanned Implementation', href: '/sections/unplanned-implementation/' },
   { label: 'Archive', href: '/archive/' },

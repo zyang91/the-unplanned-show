@@ -1,58 +1,124 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import StoryList from '../components/StoryList.astro';
 import StaffReport from '../components/StaffReport.astro';
-import SeriesLinks from '../components/SeriesLinks.astro';
+import StoryLink from '../components/StoryLink.astro';
 import { getPublished } from '../lib/articles';
-import { SECTIONS } from '../data/site';
+import { SECTIONS, SERIES, SITE } from '../data/site';
 import { withBase } from '../lib/url';
 
 const stories = await getPublished();
-const latest = stories.slice(0, 6);
+const [lead, ...rest] = stories;
+const secondary = rest.slice(0, 3);
+const more = rest.slice(3, 9);
+
+// Section positions stay reserved on the front page until a story is filed.
+const reserved = SECTIONS.map((s) => ({ ...s, story: stories.find((a) => a.data.section === s.slug) }));
+
+const school = SECTIONS[0];
+const [plan, implementation] = [SECTIONS[1], SECTIONS[2]];
+const latestFor = async (filter: Parameters<typeof getPublished>[0]) => (await getPublished(filter)).slice(0, 3);
+const seriesStories = await Promise.all(SERIES.map(async (s) => ({ ...s, stories: await latestFor({ series: s.slug }) })));
+const planStories = await latestFor({ section: 'unplanned-plan' });
+const implStories = await latestFor({ section: 'unplanned-implementation' });
 ---
 
 <BaseLayout>
-  <section class="container lead" aria-labelledby="lead-title">
-    <h1 class="lead__title" id="lead-title">Breaking News: Planning Continues Despite Uncertain Results.</h1>
-    <div class="lead__foot">
-      <p class="lead__deck">Our first stories are still in committee, pending further study.</p>
-      <p class="actions">
-        <a class="btn" href={withBase('/about/')}>About the publication</a>
-        <a class="btn btn--quiet" href="#sections">Browse the sections</a>
-      </p>
-    </div>
-  </section>
+  <div class="container front">
+    <section class="front__lead" aria-labelledby="lead-title">
+      {lead ? (
+        <>
+          <h1 class="lead__title" id="lead-title"><a href={withBase(`/articles/${lead.id}/`)}>{lead.data.title}</a></h1>
+          {lead.data.excerpt && <p class="lead__deck">{lead.data.excerpt}</p>}
+          <StoryLink article={lead} />
+        </>
+      ) : (
+        <>
+          <h1 class="lead__title" id="lead-title">Breaking News: Planning Continues Despite Uncertain Results.</h1>
+          <p class="lead__deck">Our first stories are still in committee, pending further study.</p>
+          <p class="lead__slug">Placeholder for the lead story. No article has been filed for this position.</p>
+        </>
+      )}
+    </section>
 
-  <section class="container band split" aria-labelledby="latest-head">
-    <div class="split__main">
-      <h2 class="h-section" id="latest-head">Latest stories</h2>
-      <StoryList articles={latest} />
-    </div>
-    <div class="split__side">
+    <aside class="front__side" aria-label="Editorial notes">
       <StaffReport published={stories.length} />
-    </div>
-  </section>
+      <section class="note-box" aria-labelledby="note-title">
+        <h2 class="note-box__title" id="note-title">From the editors</h2>
+        <p>Satire is labelled. Evidence is listed.</p>
+        <p>{SITE.disclaimer}</p>
+        <p><a href={withBase('/editorial-policy/')}>Read the editorial policy</a></p>
+      </section>
+    </aside>
 
-  <section class="container band" id="sections" aria-labelledby="sections-head">
-    <h2 class="h-section" id="sections-head">The three sections</h2>
-    <div class="sections">
-      {SECTIONS.map((s) => (
-        <article class="section-card">
-          <h3 class="section-card__title"><a href={withBase(s.href)}>{s.title}</a></h3>
-          <p class="section-card__tag">{s.tagline}</p>
+    <section class="front__inside" aria-label="Also in this edition">
+      {secondary.length > 0 ? (
+        <>
+          {secondary.map((a) => <StoryLink article={a} headline="h2" />)}
+          {more.length > 0 && (
+            <div class="front__more">
+              {more.map((a) => <StoryLink article={a} headline="h2" compact />)}
+            </div>
+          )}
+        </>
+      ) : (
+        reserved.map((s) => (
+          <article class="slot">
+            <h2 class="slot__title"><a href={withBase(s.href)}>{s.title}</a></h2>
+            <p class="slot__tag">{s.tagline}</p>
+            <p class="slot__slug">No story filed. Position reserved.</p>
+          </article>
+        ))
+      )}
+    </section>
+  </div>
+
+  <div class="container inside" id="sections">
+    <section class="part" aria-labelledby="school-head">
+      <header class="part__head">
+        <h2 class="part__title" id="school-head"><a href={withBase(school.href)}>{school.title}</a></h2>
+        <p class="part__tag">{school.tagline}</p>
+      </header>
+      <div class="series">
+        {seriesStories.map((s) => (
+          <article class="series__col">
+            <h3 class="series__title"><a href={withBase(s.href)}>{s.title}</a></h3>
+            <p class="series__tag">{s.tagline}</p>
+            <p>{s.summary}</p>
+            {s.stories.length > 0 ? (
+              <ul class="headlines">
+                {s.stories.map((a) => <li><a href={withBase(`/articles/${a.id}/`)}>{a.data.title}</a></li>)}
+              </ul>
+            ) : (
+              <p class="slot__slug">No stories filed.</p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <div class="parts">
+      {[{ s: plan, list: planStories }, { s: implementation, list: implStories }].map(({ s, list }) => (
+        <section class="part" aria-labelledby={`${s.slug}-head`}>
+          <header class="part__head">
+            <h2 class="part__title" id={`${s.slug}-head`}><a href={withBase(s.href)}>{s.title}</a></h2>
+            <p class="part__tag">{s.tagline}</p>
+          </header>
           <p>{s.summary}</p>
-          {s.slug === 'unplanned-school' && <SeriesLinks />}
-        </article>
+          {list.length > 0 ? (
+            <ul class="headlines">
+              {list.map((a) => <li><a href={withBase(`/articles/${a.id}/`)}>{a.data.title}</a></li>)}
+            </ul>
+          ) : (
+            <p class="slot__slug">No stories filed.</p>
+          )}
+        </section>
       ))}
     </div>
-  </section>
+  </div>
 
-  <section class="principle-band" aria-label="Editorial principle">
-    <div class="container principle-band__grid">
-      <p class="principle-band__quote">Research seriously. Write absurdly. Let the contradiction deliver the punchline.</p>
-      <p class="principle-band__note">
-        Satire is labelled. Evidence is listed.
-      </p>
+  <section class="pullquote" aria-label="Editorial principle">
+    <div class="container">
+      <p class="pullquote__quote">Research seriously. Write absurdly. Let the contradiction deliver the punchline.</p>
     </div>
   </section>
 </BaseLayout>
