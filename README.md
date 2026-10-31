@@ -1,5 +1,7 @@
 # The Unplanned Show
 
+Zhanchao Yang
+
 *Because Not Everything Needs a Plan.*
 
 An independent satirical urban planning blog. Static site built with [Astro](https://astro.build), Markdown articles, no backend, no database, no accounts. The editorial and visual specification is [`design/design.md`](design/design.md).
