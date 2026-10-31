@@ -20,7 +20,7 @@ const articles = defineCollection({
         .array(
           z.object({
             title: z.string().min(1),
-            url: z.string().url().optional(),
+            url: z.url().optional(),
             note: z.string().optional(),
           }),
         )
