@@ -1,0 +1,14 @@
+---
+interface Props { published: number }
+const { published } = Astro.props;
+---
+
+<aside class="report" aria-labelledby="report-title">
+  <h2 class="report__title" id="report-title">Staff report on this edition</h2>
+  <dl class="report__list">
+    <div><dt>Stories published</dt><dd class="num">{published}</dd></div>
+    <div><dt>Status</dt><dd>Pending further study</dd></div>
+    <div><dt>Public comment</dt><dd>Not accepted</dd></div>
+    <div><dt>Recommendation</dt><dd>Proceed, uncertainly</dd></div>
+  </dl>
+</aside>

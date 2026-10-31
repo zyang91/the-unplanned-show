@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import EmptyState from '../components/EmptyState.astro';
+import { getPublished } from '../lib/articles';
+import { SECTIONS } from '../data/site';
+import { withBase } from '../lib/url';
+
+const all = await getPublished();
+const groups = SECTIONS.map((s) => ({ section: s, items: all.filter((a) => a.data.section === s.slug) })).filter((g) => g.items.length);
+---
+
+<BaseLayout title="Archive" description="Every published story from The Unplanned Show, newest first, grouped by section.">
+  <PageHeader title="Archive" deck="Every published story, newest first. Drafts and planned topics are not listed.">
+    <p class="page-head__count num">{all.length} {all.length === 1 ? 'story' : 'stories'} on file</p>
+  </PageHeader>
+  <div class="container band">
+    {all.length === 0 ? (
+      <EmptyState
+        title="The archive is empty."
+        text="Nothing has been published yet, which is consistent with the name. Stories will be filed here as they appear."
+      />
+    ) : (
+      <>
+        <nav class="jump" aria-label="Jump to section">
+          <ul class="series-links">
+            {groups.map((g) => <li><a href={`#${g.section.slug}`}>{g.section.title}</a></li>)}
+          </ul>
+        </nav>
+        {groups.map((g) => (
+          <section class="archive-group" aria-labelledby={g.section.slug}>
+            <h2 class="h-section" id={g.section.slug}><a href={withBase(g.section.href)}>{g.section.title}</a></h2>
+            <div class="story-list">
+              {g.items.map((a) => <ArticleCard article={a} />)}
+            </div>
+          </section>
+        ))}
+      </>
+    )}
+  </div>
+</BaseLayout>

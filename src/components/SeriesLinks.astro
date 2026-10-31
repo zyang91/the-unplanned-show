@@ -1,0 +1,14 @@
+---
+import { SERIES } from '../data/site';
+import { withBase } from '../lib/url';
+interface Props { current?: string }
+const { current } = Astro.props;
+---
+
+<ul class="series-links">
+  {SERIES.map((s) => (
+    <li>
+      <a href={withBase(s.href)} aria-current={s.slug === current ? 'page' : undefined}>{s.title}</a>
+    </li>
+  ))}
+</ul>

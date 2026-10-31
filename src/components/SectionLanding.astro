@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from './PageHeader.astro';
+import StoryList from './StoryList.astro';
+import { getPublished } from '../lib/articles';
+import { sectionBySlug, type SectionSlug } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props { slug: SectionSlug }
+const { slug } = Astro.props;
+const section = sectionBySlug(slug)!;
+const stories = await getPublished({ section: slug });
+---
+
+<BaseLayout title={section.title} description={`${section.tagline} ${section.summary}`}>
+  <PageHeader
+    title={section.title}
+    deck={section.tagline}
+    crumbs={[{ label: 'Home', href: withBase('/') }, { label: section.title }]}
+  />
+  <div class="container split">
+    <section class="split__main" aria-labelledby="latest">
+      <h2 class="h-section" id="latest">Latest in {section.title}</h2>
+      <StoryList articles={stories} showSection={false} />
+    </section>
+    <aside class="split__side" aria-labelledby="coverage">
+      <h2 class="h-minor" id="coverage">What this section covers</h2>
+      <p>{section.summary}</p>
+      <ul class="plain-list">
+        {section.coverage.map((c) => <li>{c}</li>)}
+      </ul>
+      <p class="note">Sections have no series in version 1. Stories are filed directly here.</p>
+    </aside>
+  </div>
+</BaseLayout>

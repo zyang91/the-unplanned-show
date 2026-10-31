@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <PageHeader title="This page was never planned." deck="It is not here, and nobody can say it was ever supposed to be." />
+  <div class="container band">
+    <p><a class="btn" href={withBase('/')}>Return to the front page</a></p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { SECTIONS } from '../data/site';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout title="About" description="The Unplanned Show is an independent satirical publication about urban planning, public policy and academia.">
+  <PageHeader title="About The Unplanned Show" deck="An independent satirical publication about the contradictions of planning." />
+  <div class="container doc prose">
+    <p>
+      The Unplanned Show explores the absurdities, contradictions and unintended consequences of urban planning,
+      public policy and academia. It combines factual research, deadpan humor, institutional satire and critical
+      commentary.
+    </p>
+    <blockquote class="principle">Research seriously. Write absurdly. Let the contradiction deliver the punchline.</blockquote>
+    <p>
+      It does not exist to prove that urban planning is useless. It explores a profession dedicated to shaping
+      uncertain futures, and tries to stay informed, curious and willing to question its own assumptions.
+    </p>
+
+    <h2>How it is organised</h2>
+    <p>Everything is filed as section, then series, then article.</p>
+    <ul>
+      {SECTIONS.map((s) => <li><a href={withBase(s.href)}>{s.title}</a>: {s.summary}</li>)}
+    </ul>
+
+    <h2>Satire and evidence</h2>
+    <p>
+      The publication is explicitly satirical. Facts are verified, fictional quotations are labelled, and sources
+      appear at the foot of each article. Read the full <a href={withBase('/editorial-policy/')}>editorial policy</a>.
+    </p>
+
+    <h2>Independence</h2>
+    <p>
+      The publication does not claim to represent a university, government agency, employer or professional
+      association. It currently runs as a written blog. Podcast and video formats may follow.
+    </p>
+  </div>
+</BaseLayout>

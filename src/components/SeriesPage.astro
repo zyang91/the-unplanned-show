@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from './PageHeader.astro';
+import StoryList from './StoryList.astro';
+import SeriesLinks from './SeriesLinks.astro';
+import { getPublished } from '../lib/articles';
+import { seriesBySlug, sectionBySlug, type SeriesSlug } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props { slug: SeriesSlug }
+const { slug } = Astro.props;
+const series = seriesBySlug(slug)!;
+const section = sectionBySlug(series.section)!;
+const stories = await getPublished({ series: slug });
+---
+
+<BaseLayout title={`${series.title}, ${section.title}`} description={`${series.tagline} ${series.summary}`}>
+  <PageHeader
+    title={series.title}
+    deck={series.tagline}
+    crumbs={[
+      { label: 'Home', href: withBase('/') },
+      { label: section.title, href: withBase(section.href) },
+      { label: series.title },
+    ]}
+  />
+  <div class="container split">
+    <section class="split__main" aria-labelledby="latest">
+      <h2 class="h-section" id="latest">Latest in {series.title}</h2>
+      <StoryList articles={stories} showSection={false} />
+    </section>
+    <aside class="split__side" aria-labelledby="scope">
+      <h2 class="h-minor" id="scope">What this series covers</h2>
+      <p>{series.summary}</p>
+      <ul class="plain-list">
+        {series.subjects.map((s) => <li>{s}</li>)}
+      </ul>
+      <h2 class="h-minor h-minor--gap" id="siblings">Also in {section.title}</h2>
+      <SeriesLinks current={slug} />
+    </aside>
+  </div>
+</BaseLayout>

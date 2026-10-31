@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StoryList from '../components/StoryList.astro';
+import StaffReport from '../components/StaffReport.astro';
+import SeriesLinks from '../components/SeriesLinks.astro';
+import { getPublished } from '../lib/articles';
+import { SECTIONS } from '../data/site';
+import { withBase } from '../lib/url';
+
+const stories = await getPublished();
+const latest = stories.slice(0, 6);
+---
+
+<BaseLayout>
+  <section class="container lead" aria-labelledby="lead-title">
+    <h1 class="lead__title" id="lead-title">Breaking News: Planning Continues Despite Uncertain Results.</h1>
+    <div class="lead__foot">
+      <p class="lead__deck">Our first stories are still in committee, pending further study.</p>
+      <p class="actions">
+        <a class="btn" href={withBase('/about/')}>About the publication</a>
+        <a class="btn btn--quiet" href="#sections">Browse the sections</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="container band split" aria-labelledby="latest-head">
+    <div class="split__main">
+      <h2 class="h-section" id="latest-head">Latest stories</h2>
+      <StoryList articles={latest} />
+    </div>
+    <div class="split__side">
+      <StaffReport published={stories.length} />
+    </div>
+  </section>
+
+  <section class="container band" id="sections" aria-labelledby="sections-head">
+    <h2 class="h-section" id="sections-head">The three sections</h2>
+    <div class="sections">
+      {SECTIONS.map((s) => (
+        <article class="section-card">
+          <h3 class="section-card__title"><a href={withBase(s.href)}>{s.title}</a></h3>
+          <p class="section-card__tag">{s.tagline}</p>
+          <p>{s.summary}</p>
+          {s.slug === 'unplanned-school' && <SeriesLinks />}
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="principle-band" aria-label="Editorial principle">
+    <div class="container principle-band__grid">
+      <p class="principle-band__quote">Research seriously. Write absurdly. Let the contradiction deliver the punchline.</p>
+      <p class="principle-band__note">
+        Satire is labelled. Evidence is listed.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
