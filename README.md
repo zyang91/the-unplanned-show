@@ -28,6 +28,16 @@ npm run preview    # serve dist/ locally
 
 Astro prints a harmless warning that the `articles` collection is empty until the first article exists.
 
+## Linting and checks
+
+```sh
+npm run lint       # ESLint: TypeScript and Astro rules plus jsx-a11y accessibility rules
+npm run check      # astro check: type-checks .astro and .ts files and the content schema
+npm run verify     # lint, check and build in one go
+```
+
+The same three steps run in CI (`.github/workflows/ci.yml`) on every pull request. The accessibility rules catch static problems such as missing `alt` text, invalid links and click handlers without keyboard support. They do not replace manual keyboard and screen-reader testing.
+
 ## Writing articles
 
 1. Copy [`docs/article-template.md`](docs/article-template.md) to `src/content/articles/<slug>.md`.
