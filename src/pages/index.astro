@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import StaffReport from '../components/StaffReport.astro';
 import TileMap from '../components/TileMap.astro';
 import { formatDate, getPublished, isoDate } from '../lib/articles';
-import { SECTIONS, SERIES, SITE, sectionBySlug, seriesBySlug } from '../data/site';
+import { KINDS, SECTIONS, SERIES, SITE, sectionBySlug, seriesBySlug } from '../data/site';
 import { withBase } from '../lib/url';
 
 const stories = await getPublished();
@@ -85,8 +85,9 @@ const placeholders = [
       {latest.length > 0
         ? latest.map((a) => (
             <li class="latest__item">
-              <p class="latest__by">{sectionBySlug(a.data.section)?.title}{a.data.series && ` · ${seriesBySlug(a.data.series)?.title}`}</p>
+              <p class="latest__by">{sectionBySlug(a.data.section)?.title}{a.data.series.map((s) => ` · ${seriesBySlug(s)?.title}`).join('')}</p>
               <time class="latest__time" datetime={isoDate(a.data.date!)}>{formatDate(a.data.date!)}</time>
+              {a.data.kind && <p class="kind">{KINDS[a.data.kind]}</p>}
               <a class="latest__link" href={href(a.id)}>{a.data.title}</a>
             </li>
           ))
