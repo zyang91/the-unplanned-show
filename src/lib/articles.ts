@@ -11,7 +11,7 @@ export async function getPublished(filter?: { section?: SectionSlug; series?: Se
   return all
     .filter((a) => a.data.status === 'published' && a.data.date && a.data.date.getTime() <= now)
     .filter((a) => !filter?.section || a.data.section === filter.section)
-    .filter((a) => !filter?.series || a.data.series === filter.series)
+    .filter((a) => !filter?.series || a.data.series.includes(filter.series))
     .sort((a, b) => b.data.date!.getTime() - a.data.date!.getTime());
 }
 

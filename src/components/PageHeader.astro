@@ -1,13 +1,17 @@
 ---
 interface Props {
   title: string;
+  // Small label above the headline, e.g. the article kind.
+  kicker?: string;
   deck?: string;
   crumbs?: { label: string; href?: string }[];
+  // Centres the head on the article reading column.
+  narrow?: boolean;
 }
-const { title, deck, crumbs } = Astro.props;
+const { title, kicker, deck, crumbs, narrow = false } = Astro.props;
 ---
 
-<header class="page-head container">
+<header class:list={['page-head container', { 'page-head--narrow': narrow }]}>
   {crumbs && (
     <nav class="crumbs" aria-label="Breadcrumb">
       <ol>
@@ -15,6 +19,7 @@ const { title, deck, crumbs } = Astro.props;
       </ol>
     </nav>
   )}
+  {kicker && <p class="kind">{kicker}</p>}
   <h1>{title}</h1>
   {deck && <p class="page-head__deck">{deck}</p>}
   <slot />
