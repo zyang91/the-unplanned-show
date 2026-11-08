@@ -10,9 +10,15 @@
 //
 // The Astro build re-validates frontmatter against src/content.config.ts; this script adds
 // the submission rules (folders, slugs, images, alt text, unsafe HTML) and readable messages.
+//
+// The body is not inspected as text. It is rendered to an HTML tree with Sätteri, the
+// same Markdown parser and features Astro uses, and every raw-HTML fragment is parsed
+// too, so the checks see the elements the article will actually contain: images in any
+// syntax (inline, reference-style, <img>), and no code span can hide markup.
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, posix } from 'node:path';
+import { htmlToHast, markdownToHast } from 'satteri';
 import { parse as parseYaml } from 'yaml';
 import { KIND_SLUGS, SECTION_SLUGS, SECTIONS, SERIES, SERIES_SLUGS } from '../src/data/site.ts';
 
@@ -25,6 +31,14 @@ const MAX_BYTES = 20 * MB;
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // Template text that must not survive into a real submission.
 const PLACEHOLDERS = ['Your headline here', 'Your name', 'YYYY-MM-DD', 'One or two sentences shown on cards', 'Delete this example text'];
+// Elements a story may not contain, whether written as HTML or produced by Markdown.
+const BLOCKED_TAGS = new Set([
+  'script', 'iframe', 'frame', 'frameset', 'object', 'embed', 'applet', 'style', 'link', 'meta', 'base',
+  'form', 'input', 'button', 'textarea', 'select', 'svg', 'math', 'template', 'noscript',
+]);
+const URL_PROPS = new Set(['href', 'src', 'srcSet', 'action', 'formAction', 'poster', 'data', 'xLinkHref', 'background', 'cite']);
+const BAD_URL = /^(javascript|vbscript|data):/i;
+// Second layer over the raw-HTML source, in case a fragment parses differently in isolation.
 const UNSAFE_HTML = [
   [/<\s*script\b/i, '`<script>`'],
   [/<\s*iframe\b/i, '`<iframe>`'],
@@ -32,8 +46,31 @@ const UNSAFE_HTML = [
   [/<\s*style\b/i, '`<style>`'],
   [/<\s*form\b/i, '`<form>`'],
   [/\son[a-z]+\s*=/i, 'inline event handler (`on...=`)'],
-  [/javascript:/i, '`javascript:` link'],
+  [/javascript\s*:/i, '`javascript:` link'],
 ];
+// Astro renders Markdown with GFM and smart punctuation on by default (astro.config.mjs sets neither).
+const MD_FEATURES = { gfm: true, smartPunctuation: true };
+
+/** Every element of a rendered body, with raw-HTML fragments parsed into elements. */
+function renderBody(md) {
+  const elements = [];
+  const rawSources = [];
+  let text = '';
+  const walk = (node, fromRaw) => {
+    if (node.type === 'raw') {
+      rawSources.push(node.value);
+      walk(htmlToHast(node.value), true);
+      return;
+    }
+    if (node.type === 'text') text += node.value;
+    if (node.type === 'element' && !(fromRaw && ['html', 'head', 'body'].includes(node.tagName))) {
+      elements.push({ tag: String(node.tagName).toLowerCase(), props: node.properties ?? {}, fromRaw });
+    }
+    for (const child of node.children ?? []) walk(child, fromRaw);
+  };
+  walk(markdownToHast(md, { features: MD_FEATURES, position: false }), false);
+  return { elements, raw: rawSources.join('\n'), text };
+}
 
 const args = process.argv.slice(2);
 const argValue = (name) => {
@@ -179,23 +216,45 @@ for (const s of stories) {
   const unknown = Object.keys(fm).filter((k) => !known.has(k));
   if (unknown.length) err(`Unknown field(s): ${unknown.map((k) => `\`${k}\``).join(', ')}.`);
 
-  // body
-  const prose = body.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  if (!prose.trim()) err('The story body is empty.');
-  for (const [re, label] of UNSAFE_HTML) if (re.test(prose)) err(`Raw HTML is limited for safety: remove the ${label}.`);
-  if (/^#\s/m.test(prose)) warn('A `# ` heading in the body duplicates the headline; start subheadings at `##`.');
-
-  // images: Markdown ![alt](src "title") and <img src alt>
-  const refs = [];
-  for (const im of prose.matchAll(/!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g)) refs.push({ alt: im[1], src: im[2] });
-  for (const im of prose.matchAll(/<img\b[^>]*>/gi)) {
-    const src = im[0].match(/\ssrc\s*=\s*["']([^"']+)["']/i)?.[1] ?? '';
-    const alt = im[0].match(/\salt\s*=\s*["']([^"']*)["']/i)?.[1];
-    refs.push({ alt: alt ?? '', src, html: true });
+  // body, as rendered
+  let rendered;
+  try {
+    rendered = renderBody(body);
+  } catch (e) {
+    err(`The story body could not be read as Markdown: ${String(e.message).split('\n')[0]}`);
+    continue;
   }
+  const { elements, raw: rawHtml, text } = rendered;
+  if (!text.trim() && !elements.some((e) => e.tag === 'img')) err('The story body is empty.');
+
+  const blocked = new Set();
+  for (const { tag, props } of elements) {
+    if (BLOCKED_TAGS.has(tag)) blocked.add(`\`<${tag}>\``);
+    for (const [k, v] of Object.entries(props)) {
+      if (/^on/i.test(k)) blocked.add('inline event handler (`on...=`)');
+      const vals = Array.isArray(v) ? v : [v];
+      // Browsers ignore whitespace and control characters inside a URL scheme ("java\tscript:").
+      const squash = (x) => [...x].filter((c) => c.charCodeAt(0) > 32).join('');
+      if (URL_PROPS.has(k) && vals.some((x) => typeof x === 'string' && BAD_URL.test(squash(x)))) {
+        blocked.add('`javascript:`/`data:` link');
+      }
+    }
+  }
+  for (const [re, label] of UNSAFE_HTML) if (re.test(rawHtml)) blocked.add(label);
+  for (const b of blocked) err(`Raw HTML is limited for safety: remove the ${b}.`);
+  if (elements.some((e) => e.tag === 'h1')) warn('A `# ` heading in the body duplicates the headline; start subheadings at `##`.');
+
+  // images, in reading order, whatever the syntax
+  const refs = elements
+    .filter((e) => e.tag === 'img')
+    .map((e) => ({ alt: typeof e.props.alt === 'string' ? e.props.alt : '', src: String(e.props.src ?? ''), html: e.fromRaw }));
   const used = new Set();
   for (const { alt, src, html } of refs) {
     if (html) warn(`\`<img src="${src}">\` is not resized for the web; prefer \`![alt](./file.png)\`.`);
+    if (!src) {
+      err('An image has no source.');
+      continue;
+    }
     if (!alt.trim()) err(`Image \`${src}\` needs alt text: \`![what the picture shows](${src})\`.`);
     if (/^https?:\/\//i.test(src)) {
       warn(`\`${src}\` is hot-linked from another site; add the file to the folder instead if you can.`);
@@ -215,9 +274,11 @@ for (const s of stories) {
   }
 
   // internal article links
-  for (const lk of prose.matchAll(/\]\((\/articles\/([^/)#?]+)\/?[^)]*)\)/g)) {
-    const target = lk[2].toLowerCase();
-    if (!slugCount.has(target) && !editorSlugs.has(target)) warn(`Link \`${lk[1]}\` points to an article that does not exist.`);
+  for (const { tag, props } of elements) {
+    const m = tag === 'a' && typeof props.href === 'string' ? props.href.match(/^\/articles\/([^/#?]+)/) : null;
+    if (m && !slugCount.has(m[1].toLowerCase()) && !editorSlugs.has(m[1].toLowerCase())) {
+      warn(`Link \`${props.href}\` points to an article that does not exist.`);
+    }
   }
 
   // files in the folder
