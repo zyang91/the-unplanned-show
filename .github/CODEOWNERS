@@ -1,0 +1,3 @@
+# The editor reviews everything. With branch protection on main ("Require review
+# from Code Owners"), nothing is published without the editor's approval.
+* @zyang91

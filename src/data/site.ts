@@ -17,11 +17,13 @@ export const SERIES_SLUGS = ['mcp-session', 'musa-session', 'academia-research']
 
 // What kind of piece an article is, shown as a small label above its headline.
 // Add a kind here before using it in frontmatter.
-export const KIND_SLUGS = ['course-docket', 'commentary'] as const;
+export const KIND_SLUGS = ['course-docket', 'commentary', 'short-satire', 'comic'] as const;
 export type KindSlug = (typeof KIND_SLUGS)[number];
 export const KINDS: Record<KindSlug, string> = {
   'course-docket': 'Course Docket',
   commentary: 'Commentary',
+  'short-satire': 'Short Satire',
+  comic: 'Comic',
 };
 
 export type SectionSlug = (typeof SECTION_SLUGS)[number];

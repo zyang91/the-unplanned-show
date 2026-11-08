@@ -24,11 +24,13 @@ Research seriously. Write absurdly. Let the contradiction deliver the punchline.
 
 ## Publishing workflow
 
-1. Copy `docs/article-template.md` to `src/content/articles/<slug>.md`.
-2. Fill in the frontmatter. Keep `status: draft` and `date: null` while writing.
-3. When the piece is verified and edited, set `status: published` and a real `date` (YYYY-MM-DD) and an `excerpt`.
-4. Run `npm run build`. The schema rejects invalid combinations (for example a missing series under Unplanned School).
-5. Only `published` articles with a date on or before the build date reach the site, archive and RSS feed.
+1. A story arrives as a pull request adding `submissions/<section>/<slug>/` (see `CONTRIBUTING.md`).
+2. Read the submission review comment on the PR: anything under **Must fix** blocks the build; warnings are for judgment (no byline, draft status, future date, unused images, large files).
+3. Check the piece against these guidelines and the Vercel preview. Edit fields or copy directly on the PR branch, or request changes. Final say on title, section, series, date, excerpt and credit is the editor's.
+4. To hold a piece, set `status: draft` before merging, or don't merge.
+5. Merge. That is publication: the site rebuilds and only `published` articles with a date on or before the build date reach the site, archive and RSS feed.
+
+Editor-only pieces can skip the PR route: copy `docs/article-template.md` to `src/content/articles/<slug>.md`.
 
 ## Copyright
 

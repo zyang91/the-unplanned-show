@@ -34,8 +34,8 @@ The final report, accompanied by a Quarto website, is due at the end of the seme
 
 ## Scenes from class
 
-![Scene from class, 1](./musa-4040-course-docket/1.png)
+![Scene from class, 1](./1.png)
 
-![Scene from class, 2](./musa-4040-course-docket/2.png)
+![Scene from class, 2](./2.png)
 
-![Scene from class, 3](./musa-4040-course-docket/3.png)
+![Scene from class, 3](./3.png)
