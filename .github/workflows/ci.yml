@@ -1,5 +1,9 @@
-# Quality gate for pull requests and pushes to main: accessibility and code lint,
-# type check, and a production build. It does not deploy anything.
+# Quality gate for pull requests and pushes to main: submission checks, lint,
+# type check and a production build. It does not deploy anything.
+#
+# Safe for pull requests from forks: read-only token, no secrets, and contributor
+# files are only read (Markdown and images), never executed. The review comment on
+# the PR is posted by submission-report.yml, which never checks out PR code.
 name: CI
 
 on:
@@ -15,11 +19,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2 # the PR merge commit and its base, to list changed files
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      - name: Check submissions
+        id: submissions
+        run: |
+          mkdir -p report
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --name-only HEAD^1 HEAD > report/changed.txt
+            echo "${{ github.event.pull_request.number }}" > report/pr-number
+            echo "${{ github.event.pull_request.head.sha }}" > report/head-sha
+          fi
+          set +e
+          npm run --silent check:submissions -- --report report/report.md $( [ -s report/changed.txt ] && echo --changed report/changed.txt )
+          status=$?
+          set -e
+          [ -s report/report.md ] && cat report/report.md >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      # Uploaded even when checks fail, so the contributor sees what to fix.
+      - name: Save review report
+        if: always() && github.event_name == 'pull_request' && hashFiles('report/report.md') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: submission-report
+          path: report/
+          retention-days: 7
+
       - run: npm run lint
       - run: npm run check
       - run: npm run build

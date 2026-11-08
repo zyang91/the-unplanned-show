@@ -1,6 +1,6 @@
 ---
 title: "Working title goes here"
-kind: commentary                 # optional label above the headline: course-docket | commentary (add more in src/data/site.ts)
+kind: commentary                 # optional label above the headline: course-docket | commentary | short-satire | comic (add more in src/data/site.ts)
 section: unplanned-school        # unplanned-school | unplanned-plan | unplanned-implementation
 series: musa-session             # only for unplanned-school: mcp-session | musa-session | academia-research, or a list: [mcp-session, musa-session]
 status: draft                    # draft | published

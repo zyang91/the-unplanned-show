@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "lint": "eslint .",
-    "verify": "npm run lint && npm run check && npm run build"
+    "verify": "npm run check:submissions && npm run lint && npm run check && npm run build",
+    "check:submissions": "node --experimental-strip-types scripts/check-submissions.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
@@ -27,6 +28,7 @@
     "eslint-plugin-jsx-a11y-x": "^0.2.0",
     "globals": "^17.13.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.1",
+    "yaml": "^2.9.1"
   }
 }

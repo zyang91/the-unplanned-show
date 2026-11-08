@@ -1,0 +1,74 @@
+# Posts the submission review (written by CI) as one comment on the pull request,
+# and updates that same comment on every new push instead of adding another.
+#
+# Runs after CI with permission to comment, including on PRs from forks. It never
+# checks out or runs pull-request code: it only reads the report artifact, checks
+# that the PR number and commit in it match the CI run, and posts the text.
+# Note: workflow_run workflows only start once this file is on the default branch.
+name: Submission report
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
+    steps:
+      - name: Download report
+        id: dl
+        run: |
+          if gh run download "$RUN_ID" -n submission-report -D report; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No submission report for this run (the PR does not touch submissions/)."
+          fi
+
+      - name: Post or update the review comment
+        if: steps.dl.outputs.found == 'true'
+        run: |
+          pr=$(head -c 12 report/pr-number | tr -cd '0-9')
+          sha=$(head -c 64 report/head-sha | tr -cd '0-9a-f')
+          [ -n "$pr" ] || { echo "Bad PR number"; exit 1; }
+          # Only trust the artifact if it belongs to this PR's current head commit.
+          actual=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
+          if [ "$sha" != "$HEAD_SHA" ] || [ "$actual" != "$HEAD_SHA" ]; then
+            echo "Report is for $sha, run is for $HEAD_SHA, PR head is $actual; skipping stale report."
+            exit 0
+          fi
+
+          marker='<!-- unplanned-submission-report -->'
+          case "$CONCLUSION" in
+            success) state="✅ All checks passed. Merging publishes every story marked **Publishes** below." ;;
+            *)       state="❌ Checks did not pass ([details]($RUN_URL)). Nothing can be published until they do." ;;
+          esac
+          {
+            echo "$marker"
+            echo "$state"
+            echo
+            head -c 60000 report/report.md
+            echo
+            echo
+            echo "<sub>Commit ${HEAD_SHA:0:7}. This comment updates itself on every push.</sub>"
+          } > body.md
+
+          id=$(gh api "repos/$GH_REPO/issues/$pr/comments" --paginate \
+                 --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" | head -n1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GH_REPO/issues/comments/$id" -F body=@body.md > /dev/null
+          else
+            gh api -X POST "repos/$GH_REPO/issues/$pr/comments" -F body=@body.md > /dev/null
+          fi

@@ -3,10 +3,23 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { KIND_SLUGS, SECTION_SLUGS, SERIES_SLUGS } from './data/site';
 
-// Articles are Markdown files in src/content/articles/. Only `status: published`
-// articles with a date ever get a page, an archive entry or an RSS item.
+// Articles come from two places, into one collection with one schema:
+//   submissions/<section>/<slug>/index.md   contributor stories (see CONTRIBUTING.md);
+//                                           folders starting with "_" (templates) are skipped
+//   src/content/articles/<slug>.md          editor-only pieces
+// The URL is always /articles/<slug>/, the folder or file name, so a story keeps
+// its link wherever it lives. scripts/check-submissions.mjs rejects duplicate slugs.
+// Only `status: published` articles with a date ever get a page, an archive entry or an RSS item.
 const articles = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
+  loader: glob({
+    pattern: ['submissions/*/*/index.md', '!submissions/*/_*/**', 'src/content/articles/*.md'],
+    base: '.',
+    generateId: ({ entry }) => {
+      const parts = entry.split('/');
+      const name = parts.at(-1) === 'index.md' ? parts.at(-2)! : parts.at(-1)!.replace(/\.md$/, '');
+      return name.toLowerCase();
+    },
+  }),
   schema: z
     .object({
       title: z.string().min(1),
