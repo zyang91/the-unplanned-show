@@ -11,8 +11,6 @@ author_title: Department Coordinator & Staff Reporter, The Unplanned Show
 sources: []
 ---
 
-**Breaking News from The Unplanned Show**
-
 **PHILADELPHIA** — A group of graduate city planning students successfully completed their studio's mandatory site visit with their instructor, Dr. Practicing, last Friday. They confirmed that the study area exists and remains consistent with its representation on Google Maps.
 
 "We saw lots of buildings, trees, and falling leaves, because it's fall right now," said one student.
