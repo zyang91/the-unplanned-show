@@ -15,7 +15,10 @@
   --color-rule: #D8D4CC;
   --color-accent: #B3262D; --color-accent-ink: #F7F5F0; --color-focus: #B3262D;
   --font-display: Georgia, "Times New Roman", ui-serif, serif;
-  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Newspaper pairing in the NYT manner: a Georgia text face (NYT's own fallback for Imperial) and
+     Libre Franklin, an open Franklin Gothic revival, for labels, navigation and metadata. */
+  --font-body: Georgia, "Times New Roman", ui-serif, serif;
+  --font-ui: "Libre Franklin", "Franklin Gothic Medium", "Helvetica Neue", Arial, sans-serif;
   --font-blackletter: "UnifrakturMaguntia", "Old English Text MT", Georgia, serif;
   --font-outlier: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --radius-card: 2px; --radius-pill: 999px; --rule-hair: 1px; --shadow-card: none;

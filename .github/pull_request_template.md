@@ -3,7 +3,7 @@
 **Story folder:** `submissions/<section>/<slug>/`
 
 - [ ] I copied the `_template` folder and filled in every field
-- [ ] Every image has alt text and is mine or used with permission
+- [ ] Every image has alt text and is mine (AI-generated is fine) or used with permission
 - [ ] Real facts are listed in `sources`; everything invented is clearly satire
 - [ ] I'm fine with the editor editing the title, excerpt, date or section before publishing
 

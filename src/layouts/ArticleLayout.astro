@@ -7,7 +7,7 @@ import { withBase } from '../lib/url';
 
 interface Props { article: Article }
 const { article } = Astro.props;
-const { title, kind, section, series, date, excerpt, author, sources } = article.data;
+const { title, kind, section, series, date, excerpt, author, author_title, sources } = article.data;
 const sec = sectionBySlug(section)!;
 // Breadcrumb follows the first series listed; the rest are linked under the byline.
 const sers = series.map(seriesBySlug).filter((s) => s !== undefined);
@@ -23,7 +23,7 @@ const crumbs = [
 <BaseLayout title={title} description={excerpt} type="article">
   <PageHeader title={title} kicker={kind && KINDS[kind]} deck={excerpt} crumbs={crumbs} narrow>
     <p class="byline">
-      {author && <span>By {author}</span>}
+      {author && <span>By {author}{author_title && `, ${author_title}`}</span>}
       {date && <time datetime={isoDate(date)}>{formatDate(date)}</time>}
     </p>
     {sers.length > 1 && (
@@ -32,13 +32,6 @@ const crumbs = [
   </PageHeader>
   <div class="container article">
     <div class="prose"><slot /></div>
-    <aside class="satire-note" aria-labelledby="satire-title">
-      <h2 class="h-minor" id="satire-title">A note on satire</h2>
-      <p>
-        This is satire. Exaggeration, parody and invented scenarios are part of the joke. Any quotation not tied to a
-        cited source is fictional.
-      </p>
-    </aside>
     <section class="evidence" aria-labelledby="evidence-title">
       <h2 class="h-minor" id="evidence-title">Sources and references</h2>
       {sources.length > 0 ? (
