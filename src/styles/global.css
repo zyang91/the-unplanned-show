@@ -83,7 +83,7 @@ a:hover { color: var(--color-accent); }
 .stack a { text-decoration: none; }
 .stack a:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
 .slot__slug { margin-top: var(--space-xs); font-size: var(--text-sm); color: var(--color-muted); max-width: 40ch; }
-.kicker-head { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0; padding-bottom: var(--space-sm); }
+.kicker-head { font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0; padding-bottom: var(--space-sm); }
 .kicker-head a { text-decoration: none; }
 .rail { margin: 0; padding: 0; list-style: none; }
 .rail__item { display: grid; gap: var(--space-3xs); padding-block: var(--space-md); border-top: 1px solid var(--color-rule); }
@@ -181,7 +181,7 @@ a.latest__link:hover { text-decoration: underline; text-decoration-color: var(--
 
 /* ---- Stories ---- */
 /* Article kind label, set above headlines. */
-.kind { margin-bottom: var(--space-2xs); font-family: var(--font-body); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent); max-width: none; }
+.kind { margin-bottom: var(--space-2xs); font-family: var(--font-ui); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent); max-width: none; }
 .story-list { display: grid; gap: 0; }
 .story { padding-block: var(--space-lg); border-top: 1px solid var(--color-rule); }
 .story:first-child { border-top: 0; padding-top: 0; }
@@ -296,3 +296,8 @@ a.latest__link:hover { text-decoration: underline; text-decoration-color: var(--
 @media (prefers-reduced-motion: reduce) {
   .nav__link, .btn { transition: none; }
 }
+
+/* Sans-serif UI layer: navigation, labels, bylines and metadata (see --font-ui in tokens.css). */
+.masthead__strip, .nav__link, .subnav__link, .nav__toggle-label, .btn, .crumbs, .byline, .lead__by, .rail__kicker,
+.slot__slug, .latest__tag, .latest__slug, .tiles__note, .story__meta, .series-card__count, .note, .evidence__note,
+.colophon__links, .colophon__legal, .skip-link { font-family: var(--font-ui); }
