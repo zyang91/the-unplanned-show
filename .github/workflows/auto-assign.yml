@@ -1,0 +1,41 @@
+# Assigns every new pull request to the editor, and labels submissions by section,
+# so nothing waits unowned in the queue. Review requests already come from CODEOWNERS.
+#
+# Uses pull_request_target so it also works on PRs from forks. It never checks out
+# or runs pull-request code: it only reads the PR's list of changed file names.
+name: Auto-assign
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      # Who owns the review queue. Add more logins separated by commas.
+      ASSIGNEES: zyang91
+    steps:
+      - name: Assign the editor
+        run: gh pr edit "$PR" --add-assignee "$ASSIGNEES"
+
+      - name: Label by section
+        run: |
+          files=$(gh pr view "$PR" --json files --jq '.files[].path')
+          for section in unplanned-school unplanned-plan unplanned-implementation; do
+            if printf '%s\n' "$files" | grep -q "^submissions/$section/"; then
+              gh label create "$section" --color B3262D --description "Submission to $section" 2>/dev/null || true
+              gh pr edit "$PR" --add-label "$section"
+            fi
+          done
+          if printf '%s\n' "$files" | grep -q '^submissions/'; then
+            gh label create submission --color 171717 --description "Story submission" 2>/dev/null || true
+            gh pr edit "$PR" --add-label submission
+          fi

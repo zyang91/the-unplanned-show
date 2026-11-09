@@ -56,7 +56,7 @@ The meeting opened with a moment of silence for the previous plan.
 | `title` | yes | The headline. Don't repeat it in the body. |
 | `section` | yes | Must match the folder you're in (the template already has it). |
 | `series` | Unplanned School only | `mcp-session`, `musa-session`, `academia-research`, or a list like `[mcp-session, musa-session]`. |
-| `kind` | no | The label above the headline: `commentary`, `short-satire`, `breaking-news`, `comic`, `course-docket`. |
+| `kind` | no | The label above the headline: `commentary`, `short-satire`, `breaking-news`, `comic`, `course-docket`, `opinion` (a longer, more serious piece; it runs in the home page's Opinion column). The first picture in the story becomes its cover image on the home page. |
 | `author` | no | Your byline, printed as written. Leave it out to publish unsigned. |
 | `author_title` | no | Your role, printed after your name: "By A. Planner, Staff Reporter". |
 | `date` | yes | `YYYY-MM-DD`. A proposal: the editor sets the final date. |

@@ -1,24 +1,45 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StaffReport from '../components/StaffReport.astro';
 import TileMap from '../components/TileMap.astro';
-import { formatDate, getPublished, isoDate } from '../lib/articles';
-import { KINDS, SECTIONS, SERIES, SITE, sectionBySlug, seriesBySlug } from '../data/site';
+import { coverOf, formatDate, getPublished, isoDate, type Article } from '../lib/articles';
+import { KINDS, SECTIONS, SITE, sectionBySlug, seriesBySlug } from '../data/site';
 import { withBase } from '../lib/url';
 
 const stories = await getPublished();
-const [lead, ...rest] = stories;
+// Opinion pieces live in their own right-hand column; everything else is news.
+const opinions = stories.filter((a) => a.data.kind === 'opinion').slice(0, 5);
+const news = stories.filter((a) => a.data.kind !== 'opinion');
+const [lead, ...rest] = news;
 const leftStories = rest.slice(0, 3);
 const latest = stories.slice(0, 8);
 
 const filed = Object.fromEntries(SECTIONS.map((s) => [s.slug, stories.filter((a) => a.data.section === s.slug).length]));
 const href = (id: string) => withBase(`/articles/${id}/`);
 
-const latestFor = async (filter: Parameters<typeof getPublished>[0]) => (await getPublished(filter)).slice(0, 3);
-const seriesStories = await Promise.all(SERIES.map(async (s) => ({ ...s, stories: await latestFor({ series: s.slug }) })));
-const [school, plan, implementation] = SECTIONS;
-const planStories = await latestFor({ section: 'unplanned-plan' });
-const implStories = await latestFor({ section: 'unplanned-implementation' });
+// The small label above a headline: the series for Unplanned School (MCP, MUSA, Research), else the section.
+const kicker = (a: Article) =>
+  a.data.series.length > 0
+    ? a.data.series.map((s) => seriesBySlug(s)?.short).join(' · ')
+    : (sectionBySlug(a.data.section)?.title ?? '');
+const byline = (a: Article) => (a.data.author ? `By ${a.data.author}` : formatDate(a.data.date!));
+const leadSection = lead ? sectionBySlug(lead.data.section) : undefined;
+
+// One block per section, laid out like a broadsheet inside page: a text story on the left,
+// a pictured story on the right, then a row of further headlines.
+const desks = SECTIONS.map((s) => {
+  const list = news.filter((a) => a.data.section === s.slug);
+  const pictured = list.find((a) => coverOf(a));
+  const text = list.find((a) => a !== pictured) ?? pictured;
+  const more = list.filter((a) => a !== pictured && a !== text).slice(0, 3);
+  return { s, text, pictured: pictured && pictured !== text ? pictured : undefined, soloCover: pictured === text ? pictured : undefined, more };
+});
+
+// More stories: a pictured story, a list beside it, and the editorial report on the right.
+const morePictured = news.find((a) => a !== lead && coverOf(a)) ?? news.find((a) => coverOf(a));
+const moreCover = morePictured ? coverOf(morePictured) : undefined;
+const moreList = news.filter((a) => a !== morePictured).slice(0, 6);
 
 // Pre-launch stand-ins keep the strip populated until stories are filed.
 const placeholders = [
@@ -34,21 +55,35 @@ const placeholders = [
     <section class="front__left" aria-labelledby="lead-title">
       {lead ? (
         <>
+          {leadSection && (
+            <p class="desk-kicker"><a href={withBase(leadSection.href)}>{leadSection.title} <span aria-hidden="true">›</span></a></p>
+          )}
           <h1 class="lead__title" id="lead-title"><a href={href(lead.id)}>{lead.data.title}</a></h1>
           {lead.data.excerpt && <p class="lead__deck">{lead.data.excerpt}</p>}
-          <p class="lead__by">{sectionBySlug(lead.data.section)?.title} · <time datetime={isoDate(lead.data.date!)}>{formatDate(lead.data.date!)}</time></p>
+          <p class="lead__by">{byline(lead)}</p>
         </>
       ) : (
         <>
-          <h1 class="lead__title" id="lead-title">Breaking News: Planning Continues Despite Uncertain Results.</h1>
+          <p class="desk-kicker">Breaking News</p>
+          <h1 class="lead__title" id="lead-title">Planning Continues Despite Uncertain Results.</h1>
           <p class="lead__deck">Our first stories are still in committee, pending further study.</p>
           <p class="lead__by">By the editors</p>
         </>
       )}
       <ul class="stack">
         {leftStories.length > 0
-          ? leftStories.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)
-          : SECTIONS.map((s) => <li><a href={withBase(s.href)}>{s.tagline}</a></li>)}
+          ? leftStories.map((a) => (
+              <li>
+                <span class="item-kicker">{kicker(a)}</span>
+                <a href={href(a.id)}>{a.data.title}</a>
+              </li>
+            ))
+          : SECTIONS.map((s) => (
+              <li>
+                <span class="item-kicker">{s.title}</span>
+                <a href={withBase(s.href)}>{s.tagline}</a>
+              </li>
+            ))}
       </ul>
     </section>
 
@@ -56,22 +91,23 @@ const placeholders = [
       <TileMap filed={filed} />
     </div>
 
-    <aside class="front__right" aria-labelledby="rail-title">
-      <h2 class="kicker-head" id="rail-title"><a href={withBase('/archive/')}>Sections <span aria-hidden="true">›</span></a></h2>
-      <ul class="rail">
-        {[school, plan, implementation].map((s) => (
-          <li class="rail__item">
-            <span class="rail__kicker">{s.title}</span>
-            <a class="rail__title" href={withBase(s.href)}>{s.tagline}</a>
-          </li>
-        ))}
-        {SERIES.map((s) => (
-          <li class="rail__item rail__item--small">
-            <span class="rail__kicker">Unplanned School</span>
-            <a class="rail__title" href={withBase(s.href)}>{s.title}: {s.tagline}</a>
-          </li>
-        ))}
-      </ul>
+    <aside class="front__right" aria-labelledby="opinion-title">
+      <h2 class="desk-kicker desk-kicker--rule" id="opinion-title">Opinions</h2>
+      {opinions.length > 0 ? (
+        <ul class="rail">
+          {opinions.map((a) => (
+            <li class="rail__item">
+              <span class="item-kicker">{a.data.author ?? 'The editors'}</span>
+              <a class="rail__title" href={href(a.id)}>{a.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="rail-empty">
+          <p>Longer, more serious pieces, argued straight. The first opinion is in committee.</p>
+          <p><a href={`${SITE.github}/blob/main/CONTRIBUTING.md`}>Submit an opinion</a></p>
+        </div>
+      )}
     </aside>
   </div>
 
@@ -101,59 +137,100 @@ const placeholders = [
     </ol>
   </section>
 
-  <div class="container inside" id="sections">
-    <section class="part part--school" aria-labelledby="school-head">
-      <header class="part__head">
-        <h2 class="part__title" id="school-head"><a href={withBase(school.href)}>{school.title}</a></h2>
-        <p class="part__tag">{school.tagline}</p>
-      </header>
-      <div class="series">
-        {seriesStories.map((s) => (
-          <article class="series__col">
-            <h3 class="series__title"><a href={withBase(s.href)}>{s.title}</a></h3>
-            <p class="series__tag">{s.tagline}</p>
-            <p>{s.summary}</p>
-            {s.stories.length > 0 ? (
-              <ul class="headlines">
-                {s.stories.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)}
+  {desks.map(({ s, text, pictured, soloCover, more }) => {
+    const coverStory = pictured ?? soloCover;
+    const cover = coverStory ? coverOf(coverStory) : undefined;
+    const coverHref = coverStory ? href(coverStory.id) : undefined;
+    return (
+      <section class="container desk" aria-labelledby={`${s.slug}-head`}>
+        <h2 class="desk-kicker desk-kicker--head" id={`${s.slug}-head`}>
+          <a href={withBase(s.href)}>The {s.title} latest <span aria-hidden="true">›</span></a>
+        </h2>
+        {text ? (
+          <>
+            <div class="desk__top">
+              <article class="desk__text">
+                <span class="item-kicker">{kicker(text)}</span>
+                <h3 class="desk__title"><a href={href(text.id)}>{text.data.title}</a></h3>
+                {text.data.excerpt && <p class="desk__deck">{text.data.excerpt}</p>}
+                <p class="lead__by">{byline(text)}</p>
+              </article>
+              {cover && coverHref && (
+                <figure class="desk__fig">
+                  <a href={coverHref} tabindex="-1" aria-hidden="true">
+                    <Image class="desk__img" src={cover.src} alt="" widths={[480, 800, 1200]} sizes="(max-width: 60rem) 100vw, 860px" />
+                  </a>
+                  {pictured && (
+                    <figcaption>
+                      <span class="item-kicker">{kicker(pictured)}</span>
+                      <h3 class="desk__fig-title"><a href={href(pictured.id)}>{pictured.data.title}</a></h3>
+                    </figcaption>
+                  )}
+                </figure>
+              )}
+            </div>
+            {more.length > 0 && (
+              <ul class="desk__row">
+                {more.map((a) => (
+                  <li>
+                    <span class="item-kicker">{kicker(a)}</span>
+                    <a href={href(a.id)}>{a.data.title}</a>
+                  </li>
+                ))}
               </ul>
-            ) : (
-              <p class="slot__slug">No stories filed.</p>
             )}
-          </article>
-        ))}
-      </div>
+          </>
+        ) : (
+          <div class="desk__top">
+            <div class="desk__text">
+              <span class="item-kicker">Position reserved</span>
+              <p class="desk__title">{s.tagline}</p>
+              <p class="desk__deck">No story filed. {s.summary}</p>
+            </div>
+            <div class="desk__fig desk__fig--empty" aria-hidden="true"><span>Photo pending further study</span></div>
+          </div>
+        )}
+      </section>
+    );
+  })}
+
+  <div class="container more">
+    <section class="more__main" aria-labelledby="more-title">
+      <h2 class="desk-kicker desk-kicker--rule" id="more-title">More Stories</h2>
+      {news.length > 0 ? (
+        <div class="more__grid">
+          {morePictured && moreCover && (
+            <figure class="more__fig">
+              <a href={href(morePictured.id)} tabindex="-1" aria-hidden="true">
+                <Image class="desk__img" src={moreCover.src} alt="" widths={[480, 800]} sizes="(max-width: 60rem) 100vw, 480px" />
+              </a>
+              <figcaption>
+                <span class="item-kicker">{kicker(morePictured)}</span>
+                <h3 class="desk__fig-title"><a href={href(morePictured.id)}>{morePictured.data.title}</a></h3>
+              </figcaption>
+            </figure>
+          )}
+          <ul class="more__list">
+            {moreList.map((a) => (
+              <li>
+                {a.data.kind && <span class="kind">{KINDS[a.data.kind]}</span>}
+                <a href={href(a.id)}>{a.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p class="slot__slug">No stories filed.</p>
+      )}
     </section>
 
-    <div class="part__side">
+    <aside class="more__side" aria-label="Editorial report">
       <StaffReport published={stories.length} />
-      {[{ s: plan, list: planStories }, { s: implementation, list: implStories }].map(({ s, list }) => (
-        <section class="part part--small" aria-labelledby={`${s.slug}-head`}>
-          <header class="part__head">
-            <h2 class="part__title part__title--small" id={`${s.slug}-head`}><a href={withBase(s.href)}>{s.title}</a></h2>
-            <p class="part__tag">{s.tagline}</p>
-          </header>
-          {list.length > 0 ? (
-            <ul class="headlines">
-              {list.map((a) => <li><a href={href(a.id)}>{a.data.title}</a></li>)}
-            </ul>
-          ) : (
-            <p class="slot__slug">No stories filed.</p>
-          )}
-        </section>
-      ))}
-      <section class="note-box" aria-labelledby="note-title">
-        <h2 class="note-box__title" id="note-title">From the editors</h2>
+      <div class="note-box">
         <p>Everything is satire. Evidence is listed. Images may be AI-generated.</p>
         <p>{SITE.disclaimer}</p>
         <p><a href={withBase('/editorial-policy/')}>Read the editorial policy</a></p>
-      </section>
-    </div>
+      </div>
+    </aside>
   </div>
-
-  <section class="pullquote" aria-label="Editorial principle">
-    <div class="container">
-      <p class="pullquote__quote">Research seriously. Write absurdly. Let the contradiction deliver the punchline.</p>
-    </div>
-  </section>
 </BaseLayout>

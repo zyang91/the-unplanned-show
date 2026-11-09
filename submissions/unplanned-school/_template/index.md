@@ -7,7 +7,7 @@ title: "Your headline here"
 section: unplanned-school        # keep as is: it must match the folder you are in
 series: musa-session             # required here: mcp-session | musa-session | academia-research
                                  # or several: [mcp-session, musa-session]
-kind: commentary                 # commentary | short-satire | breaking-news | comic | course-docket
+kind: commentary                 # commentary | short-satire | breaking-news | comic | course-docket | opinion
 author: "Your name"              # your real byline, as you want it printed
 author_title: "Staff Reporter"   # optional, printed after your name; delete if unused
 date: YYYY-MM-DD                 # proposed publication date; the editor may change it
