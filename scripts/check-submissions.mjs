@@ -185,7 +185,8 @@ for (const s of stories) {
 
   // author
   if (!str(fm.author)) warn('No `author`; the story will run without a byline.');
-  info.author = clean(str(fm.author)) || '—';
+  if (str(fm.author_title) && !str(fm.author)) warn('`author_title` without an `author` is not printed.');
+  info.author = clean([str(fm.author), str(fm.author_title)].filter(Boolean).join(', ')) || '—';
 
   // status / date / excerpt
   const status = fm.status ?? 'draft';
@@ -212,7 +213,7 @@ for (const s of stories) {
   }
 
   // unknown fields
-  const known = new Set(['title', 'section', 'series', 'kind', 'status', 'date', 'excerpt', 'author', 'sources']);
+  const known = new Set(['title', 'section', 'series', 'kind', 'status', 'date', 'excerpt', 'author', 'author_title', 'sources']);
   const unknown = Object.keys(fm).filter((k) => !known.has(k));
   if (unknown.length) err(`Unknown field(s): ${unknown.map((k) => `\`${k}\``).join(', ')}.`);
 

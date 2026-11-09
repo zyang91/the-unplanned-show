@@ -1,24 +1,13 @@
 ---
 title: "Planning Students Complete Successful Site Visit, Report Site Still There"
-kind: breaking news
-section: unplanned-school
-series: [mcp-session]
-status: published
-date: 2026-11-8
-excerpt: "Students Confirm Buildings, Roads, and Several Trees Exist."
-author: Mr. Huang Tang
-title of author: Department Coordinator & Staff Reporter, The Unplanned Show
-sources: []
----
-
----
-title: "Planning Students Complete Successful Site Visit, Report Site Still There"
-kind: breaking news
+kind: breaking-news
 section: unplanned-school
 series: [mcp-session]
 status: published
 date: 2026-11-08
 excerpt: "Students Confirm Buildings, Roads, and Several Trees Exist."
+author: Mr. Huang Tang
+author_title: Department Coordinator & Staff Reporter, The Unplanned Show
 sources: []
 ---
 
@@ -46,5 +35,5 @@ Asked what the group had learned from the experience, one student identified an 
 
 "The site was farther away than expected."
 
-![Picture from the site visit](Rainy-Transit-Planning-Critique.png)
+![Planning students in rain jackets crowd a wet table of coffee cups, a laptop showing the site boundary on Google Maps and a 60-page site analysis, while their instructor points to a transit-oriented development poster noting there is no train station in the site; a departure board behind them reads Train Delayed three times](./Rainy-Transit-Planning-Critique.png)
 Picture taken by reporter and department coordinator (Mr.Huang Tang)

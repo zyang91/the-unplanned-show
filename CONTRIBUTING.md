@@ -56,14 +56,15 @@ The meeting opened with a moment of silence for the previous plan.
 | `title` | yes | The headline. Don't repeat it in the body. |
 | `section` | yes | Must match the folder you're in (the template already has it). |
 | `series` | Unplanned School only | `mcp-session`, `musa-session`, `academia-research`, or a list like `[mcp-session, musa-session]`. |
-| `kind` | no | The label above the headline: `commentary`, `short-satire`, `comic`, `course-docket`. |
+| `kind` | no | The label above the headline: `commentary`, `short-satire`, `breaking-news`, `comic`, `course-docket`. |
 | `author` | no | Your byline, printed as written. Leave it out to publish unsigned. |
+| `author_title` | no | Your role, printed after your name: "By A. Planner, Staff Reporter". |
 | `date` | yes | `YYYY-MM-DD`. A proposal: the editor sets the final date. |
 | `excerpt` | yes | One or two sentences for cards, the archive and the line under the headline. |
 | `status` | no | `published` (merging publishes it) or `draft` (merged but hidden). |
 | `sources` | no | References for any real facts, each with a `title` and optional `url` and `note`. |
 
-**Images** go in the same folder and show up where you place them, in order, so a comic is just images one after another. Every image needs alt text, the words in the square brackets that describe the picture. Use PNG, JPG, GIF, WebP or AVIF, under 20 MB each (under 5 MB is better). The site resizes them.
+**Images** go in the same folder and show up where you place them, in order, so a comic is just images one after another. Every image needs alt text, the words in the square brackets that describe the picture. Illustrations, edited or AI-generated images are fine; the site states that no image is a guaranteed record of a real scene, so you don't need to label each one. Use PNG, JPG, GIF, WebP or AVIF, under 20 MB each (under 5 MB is better). The site resizes them.
 
 **Not allowed**: scripts, iframes, embedded forms or other active HTML; files other than `index.md` and images.
 
@@ -92,6 +93,6 @@ The editor may change the title, section, series, date, excerpt, captions or cre
 
 ## Editorial rules in brief
 
-This is satire: irony, exaggeration and parody are welcome. Keep invented material visibly separate from documented fact, and list real sources in `sources`. Criticise institutions and practices, not private individuals. Don't claim to speak for a university, agency or employer. Only submit images you made or have the right to use. See the public [editorial guidelines](docs/public-editorial-guidelines.md).
+This is satire: irony, exaggeration and parody are welcome. Keep invented material visibly separate from documented fact, and list real sources in `sources`. Criticise institutions and practices, not private individuals. Don't claim to speak for a university, agency or employer. Only submit images you made (AI-generated included) or have the right to use. No per-article satire notice is needed: the site carries one. See the public [editorial guidelines](docs/public-editorial-guidelines.md).
 
 By submitting, you agree the editor may edit and publish your story on the site with your byline. Content on the site is All Rights Reserved; see [COPYRIGHT.md](COPYRIGHT.md).

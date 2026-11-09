@@ -34,6 +34,8 @@ const articles = defineCollection({
       date: z.coerce.date().nullable().default(null),
       excerpt: z.string().optional(),
       author: z.string().optional(),
+      // Printed after the byline, e.g. "Department Coordinator & Staff Reporter".
+      author_title: z.string().optional(),
       sources: z
         .array(
           z.object({

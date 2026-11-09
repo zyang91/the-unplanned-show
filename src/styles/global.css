@@ -243,8 +243,7 @@ a.latest__link:hover { text-decoration: underline; text-decoration-color: var(--
 .prose blockquote { margin-inline: 0; padding-block: var(--space-md); border-block: 1px solid var(--color-ink); font-family: var(--font-display); }
 .principle { font-size: var(--text-title); line-height: 1.3; }
 .article { padding-block: var(--space-lg) var(--section-gap-s); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); }
-.satire-note, .evidence { max-width: var(--prose); padding: var(--space-lg); }
-.satire-note { background: var(--color-paper-2); border: 1px solid var(--color-rule); }
+.evidence { max-width: var(--prose); padding: var(--space-lg); }
 .evidence { border-top: 4px double var(--color-ink); padding-inline: 0; }
 .evidence__list { padding-left: var(--space-lg); margin: 0; overflow-wrap: anywhere; }
 .evidence__list li + li { margin-top: var(--space-xs); }
