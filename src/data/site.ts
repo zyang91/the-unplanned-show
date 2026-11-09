@@ -17,7 +17,8 @@ export const SERIES_SLUGS = ['mcp-session', 'musa-session', 'academia-research']
 
 // What kind of piece an article is, shown as a small label above its headline.
 // Add a kind here before using it in frontmatter.
-export const KIND_SLUGS = ['course-docket', 'commentary', 'short-satire', 'breaking-news', 'comic'] as const;
+// `opinion` is the longer, more serious piece; the home page sets it in its own right-hand column.
+export const KIND_SLUGS = ['course-docket', 'commentary', 'short-satire', 'breaking-news', 'comic', 'opinion'] as const;
 export type KindSlug = (typeof KIND_SLUGS)[number];
 export const KINDS: Record<KindSlug, string> = {
   'course-docket': 'Course Docket',
@@ -25,6 +26,7 @@ export const KINDS: Record<KindSlug, string> = {
   'short-satire': 'Short Satire',
   'breaking-news': 'Breaking News',
   comic: 'Comic',
+  opinion: 'Opinion',
 };
 
 export type SectionSlug = (typeof SECTION_SLUGS)[number];
@@ -43,6 +45,8 @@ export interface Series {
   slug: SeriesSlug;
   section: 'unplanned-school';
   title: string;
+  /** Short label for kickers on the home page. */
+  short: string;
   tagline: string;
   summary: string;
   subjects: string[];
@@ -94,6 +98,7 @@ export const SERIES: Series[] = [
   {
     slug: 'mcp-session',
     section: 'unplanned-school',
+    short: 'MCP',
     title: 'MCP Session',
     tagline: 'We Teach You How to Plan. Results May Vary.',
     summary: 'Planning education, studios, theory and professional practice.',
@@ -110,6 +115,7 @@ export const SERIES: Series[] = [
   {
     slug: 'musa-session',
     section: 'unplanned-school',
+    short: 'MUSA',
     title: 'MUSA Session',
     tagline: 'We Have a Model. We Are Looking for a Decision.',
     summary: 'Urban analytics, programming, AI, predictive modeling and applied data science.',
@@ -126,6 +132,7 @@ export const SERIES: Series[] = [
   {
     slug: 'academia-research',
     section: 'unplanned-school',
+    short: 'Research',
     title: 'Academia & Research',
     tagline: 'Peer-Reviewed. Reality Pending.',
     summary: 'Academic publishing, research methodology, bibliometrics and institutional incentives.',

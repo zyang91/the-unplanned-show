@@ -5,7 +5,7 @@
 
 title: "Your headline here"
 section: unplanned-plan          # keep as is: it must match the folder you are in
-kind: commentary                 # commentary | short-satire | breaking-news | comic | course-docket
+kind: commentary                 # commentary | short-satire | breaking-news | comic | course-docket | opinion
 author: "Your name"              # your real byline, as you want it printed
 author_title: "Staff Reporter"   # optional, printed after your name; delete if unused
 date: YYYY-MM-DD                 # proposed publication date; the editor may change it
