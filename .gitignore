@@ -5,3 +5,4 @@ dist/
 .astro/
 .hallmark/
 *.log
+.claude/launch.json
